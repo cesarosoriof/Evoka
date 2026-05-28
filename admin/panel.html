@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración — Evoka</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        /* Estilos adicionales para carga de imágenes */
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: #fafafa;
+        }
+        .upload-area:hover, .upload-area.drag-over {
+            border-color: #e87c5a;
+            background: #fff5f2;
+        }
+        .upload-area input[type="file"] { display: none; }
+        .upload-area p { margin: 0; color: #888; font-size: 0.9rem; }
+        .upload-area .upload-icon { font-size: 2rem; color: #e87c5a; }
+        .preview-grid {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+        }
+        .preview-grid .preview-item {
+            position: relative; width: 80px; height: 80px;
+        }
+        .preview-grid img {
+            width: 100%; height: 100%; object-fit: cover;
+            border-radius: 8px; border: 1px solid #ddd;
+        }
+        .preview-grid .remove-img {
+            position: absolute; top: -6px; right: -6px;
+            background: #e74c3c; color: #fff; border: none;
+            border-radius: 50%; width: 20px; height: 20px;
+            cursor: pointer; font-size: 0.75rem; line-height: 20px;
+            text-align: center; padding: 0;
+        }
+        .progress-bar-wrap {
+            display: none; height: 6px; background: #eee;
+            border-radius: 3px; overflow: hidden; margin-top: 8px;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; background: #e87c5a;
+            transition: width 0.3s;
+        }
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid #ccc; border-top-color: #e87c5a;
+            border-radius: 50%; animation: spin 0.7s linear infinite;
+            vertical-align: middle; margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; }
+        .toast-msg {
+            background: #333; color: #fff; padding: 12px 20px;
+            border-radius: 8px; margin-top: 8px; font-size: 0.9rem;
+            animation: fadeIn 0.3s ease;
+        }
+        .toast-msg.success { background: #27ae60; }
+        .toast-msg.error   { background: #e74c3c; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="admin-container">
+    <aside class="sidebar" id="sidebar">
+        <h2>Admin Panel</h2>
+        <ul>
+            <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
+            <li><a href="#" data-section="productos">Productos</a></li>
+            <li><a href="#" data-section="nuevo-producto">➕ Nuevo Producto</a></li>
+            <li><a href="#" data-section="seguridad">🔒 Seguridad</a></li>
+            <li><a href="#" id="logoutBtn">Cerrar Sesión</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="content-section active">
+            <h1>Dashboard</h1>
+            <div class="stats" id="statsContainer">
+                <div class="stat-card"><span class="spinner"></span> Cargando...</div>
+            </div>
+            <div class="export-import" style="margin-top:20px;">
+                <button id="exportBtn">⬇️ Exportar JSON</button>
+                <input type="file" id="importFile" accept=".json" style="display:none">
+                <button id="importBtn">⬆️ Importar JSON</button>
+            </div>
+        </section>
+
+        <!-- LISTA DE PRODUCTOS -->
+        <section id="productos" class="content-section">
+            <h1>Productos</h1>
+            <div class="filters">
+                <input type="text" id="searchInput" placeholder="Buscar producto...">
+                <select id="filterCategory">
+                    <option value="">Todas las categorías</option>
+                    <option value="detalles-sorpresa">Detalles Sorpresa</option>
+                    <option value="arreglos-florales">Arreglos Florales</option>
+                    <option value="fresas-con-chocolate">Fresas con Chocolate</option>
+                </select>
+            </div>
+            <div id="tablaLoading" style="padding:20px; color:#888;">
+                <span class="spinner"></span> Cargando productos...
+            </div>
+            <div class="table-wrap"><table id="productsTable" style="display:none">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table></div>
+        </section>
+        <!-- FORMULARIO NUEVO / EDITAR PRODUCTO -->
+        <section id="nuevo-producto" class="content-section">
+            <h1 id="formTitle">Nuevo Producto</h1>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <input type="hidden" id="imagenUrl">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Slug <small>(ej: mi-producto)</small></label>
+                    <input type="text" id="slug" required pattern="[a-z0-9-]+">
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="categoria" required>
+                        <option value="">Seleccionar</option>
+                        <option value="detalles-sorpresa">Detalles Sorpresa</option>
+                        <option value="arreglos-florales">Arreglos Florales</option>
+                        <option value="fresas-con-chocolate">Fresas con Chocolate</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Precio (COP)</label>
+                    <input type="number" id="precio" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="descripcion" rows="3"></textarea>
+                </div>
+
+                <!-- IMAGEN PRINCIPAL -->
+                <div class="form-group">
+                    <label>Imagen Principal</label>
+                    <div class="upload-area" id="uploadAreaPrincipal">
+                        <input type="file" id="fileImagen" accept="image/*">
+                        <div class="upload-icon">🖼️</div>
+                        <p>Haz clic o arrastra una imagen aquí</p>
+                        <p id="uploadStatusPrincipal" style="color:#e87c5a; font-size:0.8rem; margin-top:4px;"></p>
+                    </div>
+                    <div class="progress-bar-wrap" id="progressPrincipalWrap">
+                        <div class="progress-bar" id="progressPrincipal"></div>
+                    </div>
+                    <div class="preview-grid" id="previewPrincipal"></div>
+                    <p style="font-size:0.8rem; color:#aaa; margin-top:6px;">O pega una URL directamente:</p>
+                    <input type="url" id="imagenUrlInput" placeholder="https://..." style="width:100%; margin-top:4px;">
+                </div>
+
+                <!-- GALERÍA -->
+                <div class="form-group">
+                    <label>Galería <small>(puedes subir varias imágenes)</small></label>
+                    <div class="upload-area" id="uploadAreaGaleria">
+                        <input type="file" id="fileGaleria" accept="image/*" multiple>
+                        <div class="upload-icon">🖼️🖼️</div>
+                        <p>Haz clic o arrastra imágenes (puedes seleccionar varias)</p>
+                        <p id="uploadStatusGaleria" style="color:#e87c5a; font-size:0.8rem; margin-top:4px;"></p>
+                    </div>
+                    <div class="progress-bar-wrap" id="progressGaleriaWrap">
+                        <div class="progress-bar" id="progressGaleria"></div>
+                    </div>
+                    <div class="preview-grid" id="previewGaleria"></div>
+                    <!-- URLs guardadas de galería (hidden) -->
+                    <input type="hidden" id="galeriaUrls">
+                    <p style="font-size:0.8rem; color:#aaa; margin-top:6px;">O agrega URLs manualmente (una por línea):</p>
+                    <textarea id="galeriaUrlsInput" rows="3" placeholder="https://..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Contenido (ítems, uno por línea)</label>
+                    <textarea id="contenido" rows="6" required></textarea>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="destacado" style="width:auto;">
+                    <label for="destacado" style="margin:0;">Producto Destacado</label>
+                </div>
+                <button type="submit" id="submitBtn">💾 Guardar Producto</button>
+            </form>
+        </section>
+
+        <!-- SEGURIDAD -->
+        <section id="seguridad" class="content-section">
+            <h1>Cambiar Contraseña</h1>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label>Nueva Contraseña</label>
+                    <input type="password" id="newPassword" required minlength="6">
+                </div>
+                <button type="submit">🔒 Actualizar Contraseña</button>
+            </form>
+        </section>
+
+    </main>
+</div>
+
+<!-- Toast container -->
+<div class="toast" id="toastContainer"></div>
+
+<!-- Firebase SDK (ES Modules) -->
+<script type="module">
+import { inicializarDatos, obtenerProductos, obtenerProductosPorCategoria,
+         crearProducto, actualizarProducto, eliminarProducto as borrarProducto,
+         subirImagen, formatearPrecio, exportarDatos, importarDatos }
+  from "../js/data.js";
+import { verificarSesion, guardarPasswordHash } from "../js/admin-auth.js";
+
+// ── Auth ──────────────────────────────────────
+if (!verificarSesion()) {
+    window.location.href = "index.html";
+}
+
+// ── Inicializar datos ─────────────────────────
+await inicializarDatos();
+
+// ── Navegación ────────────────────────────────
+const sidebarLinks = document.querySelectorAll(".sidebar a[data-section]");
+const sections     = document.querySelectorAll(".content-section");
+
+sidebarLinks.forEach(link => {
+    link.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const id = link.getAttribute("data-section");
+        document.querySelector(".sidebar a.active")?.classList.remove("active");
+        link.classList.add("active");
+        sections.forEach(s => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        if (id === "productos") await cargarTablaProductos();
+        if (id === "dashboard") await cargarDashboard();
+    });
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    sessionStorage.removeItem("adminAuth");
+    sessionStorage.removeItem("adminTokenTime");
+    window.location.href = "index.html";
+});
+
+// ── Toast ─────────────────────────────────────
+function mostrarToast(msg, tipo = "success") {
+    const c = document.getElementById("toastContainer");
+    const t = document.createElement("div");
+    t.className = `toast-msg ${tipo}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+}
+
+// ── Dashboard ─────────────────────────────────
+async function cargarDashboard() {
+    const container = document.getElementById("statsContainer");
+    container.innerHTML = `<div class="stat-card"><span class="spinner"></span> Cargando...</div>`;
+    const productos = await obtenerProductos();
+    const total = productos.length;
+    const categorias = {};
+    productos.forEach(p => {
+        categorias[p.categoria] = (categorias[p.categoria] || 0) + 1;
+    });
+    let html = `<div class="stat-card">Total Productos: <span>${total}</span></div>`;
+    for (let cat in categorias) {
+        html += `<div class="stat-card">${cat}: <span>${categorias[cat]}</span></div>`;
+    }
+    container.innerHTML = html;
+}
+await cargarDashboard();
+
+// ── Tabla de productos ────────────────────────
+let todosLosProductos = [];
+
+async function cargarTablaProductos() {
+    document.getElementById("tablaLoading").style.display = "block";
+    document.getElementById("productsTable").style.display = "none";
+    todosLosProductos = await obtenerProductos();
+    renderTabla();
+    document.getElementById("tablaLoading").style.display = "none";
+    document.getElementById("productsTable").style.display = "table";
+}
+
+function renderTabla() {
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+    const filterCat  = document.getElementById("filterCategory").value;
+    const filtrados  = todosLosProductos.filter(p => {
+        const matchName = p.nombre.toLowerCase().includes(searchTerm);
+        const matchCat  = !filterCat || p.categoria === filterCat;
+        return matchName && matchCat;
+    });
+    const tbody = document.querySelector("#productsTable tbody");
+    tbody.innerHTML = filtrados.map(p => `
+        <tr>
+            <td><img src="${p.imagen}" alt="" style="width:50px;height:50px;object-fit:cover;border-radius:5px;" onerror="this.src='https://placehold.co/50x50?text=img'"></td>
+            <td>${escapeHTML(p.nombre)}</td>
+            <td>${p.categoria}</td>
+            <td>${formatearPrecio(p.precio)}</td>
+            <td>
+                <button class="editBtn"   data-id="${p.id}">✏️</button>
+                <button class="deleteBtn" data-id="${p.id}">🗑️</button>
+            </td>
+        </tr>
+    `).join("");
+
+    document.querySelectorAll(".editBtn").forEach(btn =>
+        btn.addEventListener("click", () => editarProducto(btn.dataset.id)));
+    document.querySelectorAll(".deleteBtn").forEach(btn =>
+        btn.addEventListener("click", () => confirmarEliminar(btn.dataset.id)));
+}
+
+async function confirmarEliminar(id) {
+    if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+    await borrarProducto(id);
+    mostrarToast("Producto eliminado", "success");
+    await cargarTablaProductos();
+    await cargarDashboard();
+}
+
+document.getElementById("searchInput").addEventListener("input", renderTabla);
+document.getElementById("filterCategory").addEventListener("change", renderTabla);
+
+// ── Subida de imágenes ────────────────────────
+let imagenPrincipalUrl = "";
+let galeriaUploadedUrls = [];
+
+function setupUploadArea(areaId, fileInputId, multiple, onUpload) {
+    const area  = document.getElementById(areaId);
+    const input = document.getElementById(fileInputId);
+    area.addEventListener("click", () => input.click());
+    area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("drag-over"); });
+    area.addEventListener("dragleave", () => area.classList.remove("drag-over"));
+    area.addEventListener("drop", e => {
+        e.preventDefault(); area.classList.remove("drag-over");
+        onUpload(e.dataTransfer.files);
+    });
+    input.addEventListener("change", () => onUpload(input.files));
+}
+
+async function subirImagenConProgreso(file, carpeta, progressId, statusId) {
+    document.getElementById(progressId + "Wrap").style.display = "block";
+    const bar    = document.getElementById(progressId);
+    const status = document.getElementById(statusId);
+    bar.style.width = "30%";
+    status.textContent = "Subiendo...";
+    try {
+        const url = await subirImagen(file, carpeta);
+        bar.style.width = "100%";
+        status.textContent = "✅ Subida exitosa";
+        setTimeout(() => {
+            document.getElementById(progressId + "Wrap").style.display = "none";
+            bar.style.width = "0%";
+        }, 2000);
+        return url;
+    } catch (err) {
+        status.textContent = "❌ Error al subir imagen";
+        bar.style.width = "0%";
+        console.error(err);
+        return null;
+    }
+}
+
+// Imagen principal
+setupUploadArea("uploadAreaPrincipal", "fileImagen", false, async (files) => {
+    if (!files[0]) return;
+    const url = await subirImagenConProgreso(files[0], "productos", "progressPrincipal", "uploadStatusPrincipal");
+    if (url) {
+        imagenPrincipalUrl = url;
+        document.getElementById("imagenUrlInput").value = url;
+        renderPreviewPrincipal(url);
+    }
+});
+
+document.getElementById("imagenUrlInput").addEventListener("input", e => {
+    imagenPrincipalUrl = e.target.value;
+    if (e.target.value) renderPreviewPrincipal(e.target.value);
+});
+
+function renderPreviewPrincipal(url) {
+    const div = document.getElementById("previewPrincipal");
+    div.innerHTML = `
+        <div class="preview-item">
+            <img src="${url}" onerror="this.src='https://placehold.co/80x80?text=img'">
+            <button type="button" class="remove-img" onclick="limpiarImagenPrincipal()">×</button>
+        </div>`;
+}
+
+window.limpiarImagenPrincipal = () => {
+    imagenPrincipalUrl = "";
+    document.getElementById("imagenUrlInput").value = "";
+    document.getElementById("previewPrincipal").innerHTML = "";
+};
+
+// Galería
+setupUploadArea("uploadAreaGaleria", "fileGaleria", true, async (files) => {
+    const arr = Array.from(files);
+    document.getElementById("uploadStatusGaleria").textContent = `Subiendo ${arr.length} imagen(es)...`;
+    for (let i = 0; i < arr.length; i++) {
+        const url = await subirImagenConProgreso(arr[i], "galeria", "progressGaleria", "uploadStatusGaleria");
+        if (url) {
+            galeriaUploadedUrls.push(url);
+        }
+    }
+    renderPreviewGaleria();
+});
+
+function renderPreviewGaleria() {
+    const all = getAllGaleriaUrls();
+    const div = document.getElementById("previewGaleria");
+    div.innerHTML = all.map((url, i) => `
+        <div class="preview-item">
+            <img src="${url}" onerror="this.src='https://placehold.co/80x80?text=img'">
+            <button type="button" class="remove-img" onclick="quitarDeGaleria(${i})">×</button>
+        </div>`).join("");
+}
+
+window.quitarDeGaleria = (idx) => {
+    const all = getAllGaleriaUrls();
+    all.splice(idx, 1);
+    // separar de vuelta en uploaded vs textarea
+    const textoUrls = document.getElementById("galeriaUrlsInput").value
+        .split("\n").map(u => u.trim()).filter(Boolean);
+    galeriaUploadedUrls = all.filter(u => !textoUrls.includes(u));
+    document.getElementById("galeriaUrlsInput").value = all
+        .filter(u => textoUrls.includes(u)).join("\n");
+    renderPreviewGaleria();
+};
+
+function getAllGaleriaUrls() {
+    const textoUrls = document.getElementById("galeriaUrlsInput").value
+        .split("\n").map(u => u.trim()).filter(Boolean);
+    return [...new Set([...galeriaUploadedUrls, ...textoUrls])];
+}
+
+document.getElementById("galeriaUrlsInput").addEventListener("input", renderPreviewGaleria);
+
+// ── Formulario guardar/editar ─────────────────
+document.getElementById("productForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Guardando...`;
+
+    const id = document.getElementById("productId").value;
+    const imgFinal = document.getElementById("imagenUrlInput").value || imagenPrincipalUrl;
+
+    if (!imgFinal) {
+        mostrarToast("Por favor agrega una imagen principal", "error");
+        btn.disabled = false; btn.innerHTML = "💾 Guardar Producto";
+        return;
+    }
+
+    const producto = {
+        nombre:      document.getElementById("nombre").value,
+        slug:        document.getElementById("slug").value,
+        categoria:   document.getElementById("categoria").value,
+        precio:      parseFloat(document.getElementById("precio").value),
+        descripcion: document.getElementById("descripcion").value,
+        imagen:      imgFinal,
+        galeria:     getAllGaleriaUrls(),
+        contenido:   document.getElementById("contenido").value.split("\n").filter(i => i.trim()),
+        destacado:   document.getElementById("destacado").checked,
+        fecha:       new Date().toISOString().split("T")[0]
+    };
+
+    try {
+        if (id) {
+            await actualizarProducto(id, producto);
+            mostrarToast("Producto actualizado correctamente ✅", "success");
+        } else {
+            await crearProducto(producto);
+            mostrarToast("Producto creado correctamente ✅", "success");
+        }
+        resetForm();
+        await cargarDashboard();
+    } catch (err) {
+        mostrarToast("Error al guardar: " + err.message, "error");
+        console.error(err);
+    }
+    btn.disabled = false; btn.innerHTML = "💾 Guardar Producto";
+});
+
+function resetForm() {
+    document.getElementById("productForm").reset();
+    document.getElementById("productId").value = "";
+    document.getElementById("formTitle").textContent = "Nuevo Producto";
+    document.getElementById("previewPrincipal").innerHTML = "";
+    document.getElementById("previewGaleria").innerHTML = "";
+    imagenPrincipalUrl = "";
+    galeriaUploadedUrls = [];
+}
+
+function editarProducto(id) {
+    const p = todosLosProductos.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById("productId").value   = p.id;
+    document.getElementById("nombre").value       = p.nombre;
+    document.getElementById("slug").value         = p.slug;
+    document.getElementById("categoria").value    = p.categoria;
+    document.getElementById("precio").value       = p.precio;
+    document.getElementById("descripcion").value  = p.descripcion || "";
+    document.getElementById("imagenUrlInput").value = p.imagen;
+    imagenPrincipalUrl = p.imagen;
+    renderPreviewPrincipal(p.imagen);
+    galeriaUploadedUrls = [];
+    document.getElementById("galeriaUrlsInput").value = (p.galeria || []).join("\n");
+    renderPreviewGaleria();
+    document.getElementById("contenido").value    = (p.contenido || []).join("\n");
+    document.getElementById("destacado").checked  = p.destacado || false;
+    document.getElementById("formTitle").textContent = "Editar Producto";
+
+    document.querySelectorAll(".sidebar a[data-section]").forEach(a => a.classList.remove("active"));
+    document.querySelector("[data-section='nuevo-producto']").classList.add("active");
+    sections.forEach(s => s.classList.remove("active"));
+    document.getElementById("nuevo-producto").classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Exportar / Importar ───────────────────────
+document.getElementById("exportBtn").addEventListener("click", async () => {
+    const data = await exportarDatos();
+    const blob = new Blob([data], { type: "application/json" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = "productos-evoka.json"; a.click();
+});
+
+document.getElementById("importBtn").addEventListener("click", () =>
+    document.getElementById("importFile").click());
+
+document.getElementById("importFile").addEventListener("change", async function (e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+        const ok = await importarDatos(ev.target.result);
+        if (ok) {
+            mostrarToast("Datos importados correctamente ✅", "success");
+            await cargarTablaProductos();
+            await cargarDashboard();
+        } else {
+            mostrarToast("Error al importar, verifica el formato JSON", "error");
+        }
+    };
+    reader.readAsText(file);
+});
+
+// ── Contraseña ────────────────────────────────
+document.getElementById("passwordForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    await guardarPasswordHash(document.getElementById("newPassword").value);
+    mostrarToast("Contraseña actualizada ✅", "success");
+    this.reset();
+});
+
+// ── Helpers ───────────────────────────────────
+function escapeHTML(str) {
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>
+
+</body>
+</html>

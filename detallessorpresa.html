@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <title>Detalles Sorpresa – German Parra</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header" id="mainHeader">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="logo"><a href="index.html"><img src="evoka-logo.png" alt="Évoka Studio" class="logo-img"></a></div>
+        <nav class="nav" id="mainNav">
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="detallessorpresa.html" class="active">Detalles Sorpresa</a></li>
+                <li><a href="arreglosflorales.html">Arreglos Florales</a></li>
+                <li><a href="fresas-con-chocolate.html">Fresas Con Chocolate</a></li>
+            </ul>
+        </nav>
+        <div class="header-right"></div>
+    </header>
+
+    <div class="page-hero-mini">
+        <span class="section-tag">✦ Colección</span>
+        <h1>Detalles Sorpresa</h1>
+        <p>Desayunos y experiencias únicas para sorprender</p>
+    </div>
+
+    <main class="catalogo-main">
+        <div class="catalogo-filters">
+            <input type="text" id="searchInput" placeholder="Buscar producto..." class="filter-input">
+            <select id="sortSelect" class="filter-select">
+                <option value="default">Ordenar por</option>
+                <option value="precio-asc">Menor precio</option>
+                <option value="precio-desc">Mayor precio</option>
+                <option value="nombre">Nombre A-Z</option>
+            </select>
+        </div>
+        <div class="productos-grid" id="productosGrid">
+            <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div><p>Cargando productos...</p></div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="evoka-logo.png" alt="Évoka Studio" class="logo-img footer-logo-img">
+                <p>Sorpresas con corazón, entregadas en Bogotá.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Categorías</h4>
+                <ul>
+                    <li><a href="detallessorpresa.html">Detalles Sorpresa</a></li>
+                    <li><a href="arreglosflorales.html">Arreglos Florales</a></li>
+                    <li><a href="fresas-con-chocolate.html">Fresas Con Chocolate</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Síguenos</h4>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/germancho_00/" target="_blank"><i class='bx bxl-instagram'></i></a>
+                    <a href="https://www.facebook.com" target="_blank"><i class='bx bxl-facebook'></i></a>
+                    <a href="https://wa.me/573146377283" target="_blank"><i class='bx bxl-whatsapp'></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 German Parra. Todos los derechos reservados.</p></div>
+    </footer>
+
+    <a href="https://wa.me/573146377283?text=Hola%2C%20quiero%20más%20información" class="wa-float" target="_blank"><i class='bx bxl-whatsapp'></i></a>
+
+    <script type="module">
+        import { obtenerProductosPorCategoria, formatearPrecio } from "./js/data.js";
+
+        const CATEGORIA = 'detalles-sorpresa';
+        let todosLosProductos = [];
+
+        function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        function renderGrid() {
+            const grid    = document.getElementById('productosGrid');
+            const query   = document.getElementById('searchInput').value.toLowerCase().trim();
+            const orden   = document.getElementById('sortSelect').value;
+            let productos = [...todosLosProductos];
+
+            if (query) productos = productos.filter(p => p.nombre.toLowerCase().includes(query));
+
+            if (orden === 'precio-asc')  productos.sort((a,b) => a.precio - b.precio);
+            if (orden === 'precio-desc') productos.sort((a,b) => b.precio - a.precio);
+            if (orden === 'nombre')      productos.sort((a,b) => a.nombre.localeCompare(b.nombre));
+
+            if (!productos.length) {
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gris-texto);padding:3rem 0;">No se encontraron productos.</p>';
+                return;
+            }
+            grid.innerHTML = productos.map(p => `
+                <div class="producto-card">
+                    <a href="producto.html?slug=${p.slug}" class="producto-card-link">
+                        <div class="producto-card-img-wrap">
+                            <img src="${p.imagen}" alt="${escHtml(p.nombre)}" class="producto-card-img" onerror="this.src='https://placehold.co/400x300?text=Imagen'">
+                            ${p.destacado ? '<span class="badge-dest">Destacado</span>' : ''}
+                        </div>
+                    </a>
+                    <div class="producto-card-body">
+                        <h3 class="producto-card-nombre">${escHtml(p.nombre)}</h3>
+                        <p class="producto-card-precio">${formatearPrecio(p.precio)}</p>
+                        <button class="producto-card-btn" onclick="irWA('${escHtml(p.nombre)}')">
+                            <i class='bx bxl-whatsapp'></i> Pedir
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function cargarCatalogo() {
+            const grid = document.getElementById('productosGrid');
+            try {
+                todosLosProductos = await obtenerProductosPorCategoria(CATEGORIA);
+                renderGrid();
+            } catch(err) {
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#e74c3c;">Error al cargar productos.</p>';
+                console.error(err);
+            }
+        }
+
+        window.irWA = (nombre) => window.open(`https://wa.me/573146377283?text=${encodeURIComponent('Hola, quiero pedir: ' + nombre)}`, '_blank');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q') || '';
+            document.getElementById('searchInput').value = q;
+            cargarCatalogo();
+        });
+
+        document.getElementById('searchInput').addEventListener('input', renderGrid);
+        document.getElementById('sortSelect').addEventListener('change', renderGrid);
+
+        // Header scroll
+        window.addEventListener('scroll', () => {
+            document.getElementById('mainHeader').classList.toggle('scrolled', window.scrollY > 20);
+        });
+
+        // Menú
+        const toggle = document.getElementById('menuToggle');
+        const nav    = document.getElementById('mainNav');
+        toggle.addEventListener('click', () => {
+            const open = nav.classList.toggle('open');
+            toggle.classList.toggle('open', open);
+            document.body.style.overflow = open ? 'hidden' : '';
+        });
+        nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+            nav.classList.remove('open');
+            toggle.classList.remove('open');
+            document.body.style.overflow = '';
+        }));
+        document.addEventListener('click', (e) => {
+            if (!nav.contains(e.target) && !toggle.contains(e.target) && nav.classList.contains('open')) {
+                nav.classList.remove('open');
+                toggle.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+</body>
+</html>

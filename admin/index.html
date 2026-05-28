@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin – German Parra</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <h1>Panel de Administración</h1>
+        <p>German Parra Detalles</p>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" placeholder="Ingresa el usuario" required autocomplete="username">
+            </div>
+            <div class="input-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" placeholder="Ingresa la contraseña" required autocomplete="current-password">
+            </div>
+            <button type="submit">Ingresar</button>
+            <p id="errorMsg" class="error-msg"></p>
+        </form>
+    </div>
+
+    <!-- ✅ FIX: type="module" para que funcione con exports de ES Modules -->
+    <script type="module">
+        import { verificarCredenciales, verificarSesion, iniciarSesion } from '../js/admin-auth.js';
+
+        // Si ya hay sesión activa, redirigir directo al panel
+        if (verificarSesion()) {
+            window.location.href = 'panel.html';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const btn      = this.querySelector('button[type="submit"]');
+
+            btn.disabled = true;
+            btn.textContent = 'Verificando...';
+
+            if (await verificarCredenciales(username, password)) {
+                iniciarSesion();
+                window.location.href = 'panel.html';
+            } else {
+                errorMsg.textContent = 'Usuario o contraseña incorrectos';
+                btn.disabled = false;
+                btn.textContent = 'Ingresar';
+            }
+        });
+    </script>
+</body>
+</html>

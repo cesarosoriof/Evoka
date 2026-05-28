@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <title>Producto – German Parra</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header" id="mainHeader">
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="logo"><a href="index.html"><img src="evoka-logo.png" alt="Évoka Studio" class="logo-img"></a></div>
+        <nav class="nav" id="mainNav">
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="detallessorpresa.html">Detalles Sorpresa</a></li>
+                <li><a href="arreglosflorales.html">Arreglos Florales</a></li>
+                <li><a href="fresas-con-chocolate.html">Fresas Con Chocolate</a></li>
+            </ul>
+        </nav>
+        <div class="header-right"></div>
+    </header>
+
+    <main class="producto-detalle contenedor" id="productoDetalle">
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Cargando producto...</p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="evoka-logo.png" alt="Évoka Studio" class="logo-img footer-logo-img">
+                <p>Sorpresas con corazón, entregadas en Bogotá.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Categorías</h4>
+                <ul>
+                    <li><a href="detallessorpresa.html">Detalles Sorpresa</a></li>
+                    <li><a href="arreglosflorales.html">Arreglos Florales</a></li>
+                    <li><a href="fresas-con-chocolate.html">Fresas Con Chocolate</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Síguenos</h4>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/germancho_00/" target="_blank"><i class='bx bxl-instagram'></i></a>
+                    <a href="https://www.facebook.com" target="_blank"><i class='bx bxl-facebook'></i></a>
+                    <a href="https://wa.me/573146377283" target="_blank"><i class='bx bxl-whatsapp'></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 German Parra. Todos los derechos reservados.</p></div>
+    </footer>
+
+    <a href="https://wa.me/573146377283?text=Hola%2C%20quiero%20más%20información" class="wa-float" target="_blank"><i class='bx bxl-whatsapp'></i></a>
+
+    <script type="module">
+        import { obtenerProductoPorSlug, formatearPrecio } from "./js/data.js";
+
+        function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        window.cambiarImagen = (src, el) => {
+            document.getElementById('imagenPrincipal').src = src;
+            document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        };
+
+        window.comprarPorWhatsapp = (nombre) => {
+            window.open(`https://wa.me/573146377283?text=${encodeURIComponent('Hola, estoy interesado en: ' + nombre)}`, '_blank');
+        };
+
+        const catMap = {
+            'detalles-sorpresa':     { label: 'Detalles Sorpresa',    url: 'detallessorpresa.html' },
+            'arreglos-florales':     { label: 'Arreglos Florales',    url: 'arreglosflorales.html' },
+            'fresas-con-chocolate':  { label: 'Fresas Con Chocolate', url: 'fresas-con-chocolate.html' }
+        };
+
+        async function cargarProducto() {
+            const contenedor = document.getElementById('productoDetalle');
+            const slug = new URLSearchParams(window.location.search).get('slug');
+            if (!slug) { window.location.href = 'index.html'; return; }
+
+            try {
+                const producto = await obtenerProductoPorSlug(slug);
+                if (!producto) { window.location.href = 'index.html'; return; }
+
+                document.title = `${producto.nombre} – German Parra`;
+
+                const cat         = catMap[producto.categoria] || { label: producto.categoria, url: 'index.html' };
+                const galeriaHTML = (producto.galeria || []).map((img, i) =>
+                    `<img src="${img}" alt="${escHtml(producto.nombre)} ${i+1}" class="thumb ${i===0?'active':''}"
+                          onclick="cambiarImagen('${img}', this)"
+                          onerror="this.src='https://placehold.co/80x80?text=img'">`
+                ).join('');
+                const contenidoHTML = (producto.contenido || []).map(item =>
+                    `<li><i class='bx bx-check'></i> ${escHtml(item)}</li>`
+                ).join('');
+
+                contenedor.innerHTML = `
+                    <div class="breadcrumb">
+                        <a href="index.html">Inicio</a>
+                        <span>›</span>
+                        <a href="${cat.url}">${cat.label}</a>
+                        <span>›</span>
+                        <span>${escHtml(producto.nombre)}</span>
+                    </div>
+
+                    <div class="producto-layout">
+                        <div class="producto-galeria-col">
+                            <div class="imagen-principal-wrap">
+                                <img id="imagenPrincipal" src="${producto.imagen}" alt="${escHtml(producto.nombre)}"
+                                     class="imagen-principal"
+                                     onerror="this.src='https://placehold.co/600x500?text=Imagen'">
+                            </div>
+                            ${galeriaHTML ? `<div class="galeria-thumbs">${galeriaHTML}</div>` : ''}
+                        </div>
+
+                        <div class="producto-info-col">
+                            <span class="producto-cat-tag">${cat.label}</span>
+                            <h1 class="producto-titulo">${escHtml(producto.nombre)}</h1>
+                            ${producto.descripcion ? `<p class="producto-desc">${escHtml(producto.descripcion)}</p>` : ''}
+                            <div class="producto-precio-box">
+                                <span class="precio-label">Precio</span>
+                                <span class="precio-valor">${formatearPrecio(producto.precio)}</span>
+                            </div>
+                            ${contenidoHTML ? `
+                            <div class="producto-contenido">
+                                <h3>¿Qué incluye?</h3>
+                                <ul>${contenidoHTML}</ul>
+                            </div>` : ''}
+                            <button class="btn-comprar-wa" onclick="comprarPorWhatsapp('${escHtml(producto.nombre)}')">
+                                <i class='bx bxl-whatsapp'></i> Pedir por WhatsApp
+                            </button>
+                            <p class="producto-nota">Pedidos con anticipación. Entrega en Bogotá y área metropolitana.</p>
+                        </div>
+                    </div>
+                `;
+                // Lightbox al click en imagen principal
+                setTimeout(() => {
+                    const imgPrincipal = document.getElementById('imagenPrincipal');
+                    if (imgPrincipal) {
+                        imgPrincipal.style.cursor = 'zoom-in';
+                        imgPrincipal.addEventListener('click', () => abrirLightbox(imgPrincipal.src));
+                    }
+                }, 100);
+
+            } catch(err) {
+                contenedor.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:4rem 0;">Error al cargar el producto.</p>';
+                console.error(err);
+            }
+        }
+
+        function abrirLightbox(src) {
+            let lb = document.getElementById('lightbox');
+            if (!lb) {
+                lb = document.createElement('div');
+                lb.id = 'lightbox';
+                lb.className = 'lightbox';
+                lb.innerHTML = '<span class="close">&times;</span><img src="" alt="Vista ampliada">';
+                document.body.appendChild(lb);
+                lb.querySelector('.close').addEventListener('click', () => {
+                    lb.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+                lb.addEventListener('click', (e) => {
+                    if (e.target === lb) {
+                        lb.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+            lb.querySelector('img').src = src;
+            lb.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Header scroll
+        window.addEventListener('scroll', () => {
+            document.getElementById('mainHeader').classList.toggle('scrolled', window.scrollY > 20);
+        });
+
+        // Menú
+        const toggle = document.getElementById('menuToggle');
+        const nav    = document.getElementById('mainNav');
+        toggle.addEventListener('click', () => {
+            const open = nav.classList.toggle('open');
+            toggle.classList.toggle('open', open);
+            document.body.style.overflow = open ? 'hidden' : '';
+        });
+        nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+            nav.classList.remove('open');
+            toggle.classList.remove('open');
+            document.body.style.overflow = '';
+        }));
+        document.addEventListener('click', (e) => {
+            if (!nav.contains(e.target) && !toggle.contains(e.target) && nav.classList.contains('open')) {
+                nav.classList.remove('open');
+                toggle.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', cargarProducto);
+    </script>
+</body>
+</html>
