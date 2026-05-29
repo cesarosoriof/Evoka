@@ -25,7 +25,7 @@
 
     <div class="page-hero-mini">
         <span class="section-tag">✦ Colección</span>
-        <h1>Detalles Sorpresa</h1>
+        <h1>Arreglos Florales</h1>
         <p>Belleza natural para cada ocasión especial</p>
     </div>
 
@@ -54,7 +54,7 @@
                 <h4>Categorías</h4>
                 <ul>
                     <li><a href="detallessorpresa.html">Detalles Sorpresa</a></li>
-                    <li><a href="arreglosflorales.html" class="active">Arreglos Florales</a></li>
+                    <li><a href="arreglosflorales.html">Arreglos Florales</a></li>
                     <li><a href="fresas-con-chocolate.html">Fresas Con Chocolate</a></li>
                 </ul>
             </div>
@@ -63,72 +63,86 @@
                 <div class="social-links">
                     <a href="https://www.instagram.com/germancho_00/" target="_blank"><i class='bx bxl-instagram'></i></a>
                     <a href="https://www.facebook.com" target="_blank"><i class='bx bxl-facebook'></i></a>
-                    <a href="https://wa.me/573146377283" target="_blank"><i class='bx bxl-whatsapp'></i></a>
+                    <a id="footerWa" href="#" target="_blank"><i class='bx bxl-whatsapp'></i></a>
                 </div>
             </div>
         </div>
         <div class="footer-bottom"><p>&copy; 2026 German Parra. Todos los derechos reservados.</p></div>
     </footer>
 
-    <a href="https://wa.me/573146377283?text=Hola%2C%20quiero%20más%20información" class="wa-float" target="_blank"><i class='bx bxl-whatsapp'></i></a>
-
+    <a id="waFloat" href="#" class="wa-float" target="_blank"><i class='bx bxl-whatsapp'></i></a>
     <script type="module">
         import { obtenerProductosPorCategoriaOrdenados, obtenerConfig, formatearPrecio } from "./js/data.js";
 
         const CATEGORIA = 'arreglos-florales';
         let todosLosProductos = [];
-
-        function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-        function renderGrid() {
-            const grid    = document.getElementById('productosGrid');
-            const query   = document.getElementById('searchInput').value.toLowerCase().trim();
-            const orden   = document.getElementById('sortSelect').value;
-            let productos = [...todosLosProductos];
-
-            if (query) productos = productos.filter(p => p.nombre.toLowerCase().includes(query));
-
-            if (orden === 'precio-asc')  productos.sort((a,b) => a.precio - b.precio);
-            if (orden === 'precio-desc') productos.sort((a,b) => b.precio - a.precio);
-            if (orden === 'nombre')      productos.sort((a,b) => a.nombre.localeCompare(b.nombre));
-
-            if (!productos.length) {
-                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gris-texto);padding:3rem 0;">No se encontraron productos.</p>';
-                return;
-            }
-            grid.innerHTML = productos.map(p => `
-                <div class="producto-card">
-                    <a href="producto.html?slug=${p.slug}" class="producto-card-link">
-                        <div class="producto-card-img-wrap">
-                            <img src="${p.imagen}" alt="${escHtml(p.nombre)}" class="producto-card-img" onerror="this.src='https://placehold.co/400x300?text=Imagen'">
-                            ${p.destacado ? '<span class="badge-dest">Destacado</span>' : ''}
-                        </div>
-                    </a>
-                    <div class="producto-card-body">
-                        <h3 class="producto-card-nombre">${escHtml(p.nombre)}</h3>
-                        <p class="producto-card-precio">${formatearPrecio(p.precio)}</p>
-                        <button class="producto-card-btn" onclick="irWA('${escHtml(p.nombre)}')">
-                            <i class='bx bxl-whatsapp'></i> Pedir
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
         let WA = "573146377283";
 
-        async function aplicarConfigWA() {
+        function escHtml(s) {
+            if (!s) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function pedirWA(nombre) {
+            const msg = 'Hola, quiero pedir: *' + nombre + '*';
+            window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(msg), '_blank');
+        }
+
+        async function aplicarConfig() {
             try {
                 const cfg = await obtenerConfig();
                 WA = cfg.whatsapp || WA;
-                const waUrl = `https://wa.me/${WA}?text=${encodeURIComponent('Hola, quiero más información')}`;
-                document.querySelectorAll('.wa-float').forEach(el => el.href = waUrl);
-            } catch(e) { console.warn('Config WA:', e.message); }
+                const waUrl = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola, quiero más información');
+                document.getElementById('waFloat').href  = waUrl;
+                document.getElementById('footerWa').href = waUrl;
+            } catch(e) { console.warn('Config:', e.message); }
         }
 
-        window.comprarPorWhatsapp = (nombre) => {
-            window.open(`https://wa.me/${WA}?text=${encodeURIComponent('Hola, quiero pedir: *' + nombre + '*')}`, '_blank');
-        };
+        function renderGrid() {
+            const grid  = document.getElementById('productosGrid');
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const orden = document.getElementById('sortSelect').value;
+            let lista   = [...todosLosProductos];
+
+            if (query) lista = lista.filter(p =>
+                p.nombre.toLowerCase().includes(query) ||
+                (p.descripcion||'').toLowerCase().includes(query)
+            );
+            if (orden === 'precio-asc')  lista.sort((a,b) => a.precio - b.precio);
+            if (orden === 'precio-desc') lista.sort((a,b) => b.precio - a.precio);
+            if (orden === 'nombre')      lista.sort((a,b) => a.nombre.localeCompare(b.nombre));
+
+            if (!lista.length) {
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gris-texto);padding:3rem 0;">No se encontraron productos.</p>';
+                return;
+            }
+
+            // Crear tarjetas via DOM (sin onclick string — evita problemas de escaping)
+            grid.innerHTML = '';
+            lista.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'producto-card';
+                card.innerHTML =
+                    '<a href="producto.html?slug=' + p.slug + '" class="producto-card-link">' +
+                        '<div class="producto-card-img-wrap">' +
+                            '<img src="' + escHtml(p.imagen) + '" alt="' + escHtml(p.nombre) + '" class="producto-card-img" onerror="this.src='https://placehold.co/400x300?text=Imagen'" loading="lazy">' +
+                            (p.destacado ? '<span class="badge-dest">Destacado</span>' : '') +
+                        '</div>' +
+                    '</a>' +
+                    '<div class="producto-card-body">' +
+                        '<h3 class="producto-card-nombre">' + escHtml(p.nombre) + '</h3>' +
+                        '<p class="producto-card-precio">COP ' + formatearPrecio(p.precio) + '</p>' +
+                        '<button class="producto-card-btn" type="button"><i class="bx bxl-whatsapp"></i> Pedir por WhatsApp</button>' +
+                    '</div>';
+
+                // Agregar evento al botón de forma segura (sin inline onclick)
+                card.querySelector('.producto-card-btn').addEventListener('click', function() {
+                    pedirWA(p.nombre);
+                });
+
+                grid.appendChild(card);
+            });
+        }
 
         async function cargarCatalogo() {
             const grid = document.getElementById('productosGrid');
@@ -136,47 +150,39 @@
                 todosLosProductos = await obtenerProductosPorCategoriaOrdenados(CATEGORIA);
                 renderGrid();
             } catch(err) {
-                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#e74c3c;">Error al cargar productos.</p>';
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#e74c3c;padding:3rem 0;">Error al cargar productos.</p>';
                 console.error(err);
             }
         }
 
-        window.irWA = (nombre) => window.open(`https://wa.me/573146377283?text=${encodeURIComponent('Hola, quiero pedir: ' + nombre)}`, '_blank');
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const q = params.get('q') || '';
-            document.getElementById('searchInput').value = q;
-            cargarCatalogo();
-        });
-
         document.getElementById('searchInput').addEventListener('input', renderGrid);
         document.getElementById('sortSelect').addEventListener('change', renderGrid);
 
-        // Header scroll
         window.addEventListener('scroll', () => {
             document.getElementById('mainHeader').classList.toggle('scrolled', window.scrollY > 20);
         });
 
-        // Menú
         const toggle = document.getElementById('menuToggle');
-        const nav    = document.getElementById('mainNav');
+        const navEl  = document.getElementById('mainNav');
         toggle.addEventListener('click', () => {
-            const open = nav.classList.toggle('open');
+            const open = navEl.classList.toggle('open');
             toggle.classList.toggle('open', open);
             document.body.style.overflow = open ? 'hidden' : '';
         });
-        nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-            nav.classList.remove('open');
-            toggle.classList.remove('open');
-            document.body.style.overflow = '';
+        navEl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+            navEl.classList.remove('open'); toggle.classList.remove('open'); document.body.style.overflow = '';
         }));
-        document.addEventListener('click', (e) => {
-            if (!nav.contains(e.target) && !toggle.contains(e.target) && nav.classList.contains('open')) {
-                nav.classList.remove('open');
-                toggle.classList.remove('open');
-                document.body.style.overflow = '';
+        document.addEventListener('click', e => {
+            if (!navEl.contains(e.target) && !toggle.contains(e.target) && navEl.classList.contains('open')) {
+                navEl.classList.remove('open'); toggle.classList.remove('open'); document.body.style.overflow = '';
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await aplicarConfig();
+            const params = new URLSearchParams(window.location.search);
+            document.getElementById('searchInput').value = params.get('q') || '';
+            await cargarCatalogo();
         });
     </script>
 </body>

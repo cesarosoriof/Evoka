@@ -553,21 +553,22 @@
         function crearCard(p) {
             const div = document.createElement('div');
             div.className = 'c-card';
-            div.innerHTML = `
-                <a href="producto.html?slug=${p.slug}" style="display:block;text-decoration:none;color:inherit;">
-                    <div class="c-card-img-wrap">
-                        <img src="${escHtml(p.imagen)}" alt="${escHtml(p.nombre)}" loading="lazy"
-                             onerror="this.src='https://placehold.co/240x220?text=Imagen'">
-                        ${p.destacado ? '<span class="c-badge">Destacado</span>' : ''}
-                    </div>
-                </a>
-                <div class="c-card-body">
-                    <p class="c-card-nombre">${escHtml(p.nombre)}</p>
-                    <p class="c-card-precio">COP ${formatearPrecio(p.precio)}</p>
-                    <button class="c-card-btn" onclick="pedirWA('${escHtml(p.nombre)}')">
-                        <i class='bx bxl-whatsapp'></i> Pedir por WhatsApp
-                    </button>
-                </div>`;
+            div.innerHTML =
+                '<a href="producto.html?slug=' + p.slug + '" style="display:block;text-decoration:none;color:inherit;">' +
+                    '<div class="c-card-img-wrap">' +
+                        '<img src="' + escHtml(p.imagen) + '" alt="' + escHtml(p.nombre) + '" loading="lazy" onerror="this.src='https://placehold.co/240x220?text=Imagen'">' +
+                        (p.destacado ? '<span class="c-badge">Destacado</span>' : '') +
+                    '</div>' +
+                '</a>' +
+                '<div class="c-card-body">' +
+                    '<p class="c-card-nombre">' + escHtml(p.nombre) + '</p>' +
+                    '<p class="c-card-precio">COP ' + formatearPrecio(p.precio) + '</p>' +
+                    '<button class="c-card-btn" type="button"><i class="bx bxl-whatsapp"></i> Pedir por WhatsApp</button>' +
+                '</div>';
+            // Botón WA con addEventListener (no inline onclick)
+            div.querySelector('.c-card-btn').addEventListener('click', function() {
+                pedirWA(p.nombre);
+            });
             return div;
         }
 

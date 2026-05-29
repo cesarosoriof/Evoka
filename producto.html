@@ -139,9 +139,7 @@
                 const cat = catMap[producto.categoria] || { label: producto.categoria, url: 'index.html' };
 
                 const galeriaHTML = (producto.galeria||[]).map((img,i) =>
-                    `<img src="${img}" alt="${escHtml(producto.nombre)} ${i+1}" class="thumb ${i===0?'active':''}"
-                          onclick="cambiarImagen('${img}',this)"
-                          onerror="this.style.display='none'">`
+                    '<img src="' + img + '" alt="' + escHtml(producto.nombre) + ' ' + (i+1) + '" class="thumb ' + (i===0?'active':'') + '" onerror="this.style.display='none'">'
                 ).join('');
 
                 const contenidoHTML = (producto.contenido||[]).map(item =>
@@ -180,10 +178,10 @@
                                 <h3>¿Qué incluye?</h3>
                                 <ul>${contenidoHTML}</ul>
                             </div>` : ''}
-                            <button class="btn-comprar-wa" onclick="comprarPorWhatsapp('${escHtml(producto.nombre)}')">
+                            <button class="btn-comprar-wa" id="btnComprar">
                                 <i class='bx bxl-whatsapp'></i> Pedir por WhatsApp
                             </button>
-                            <button class="btn-compartir" onclick="compartirProducto('${escHtml(producto.nombre)}')">
+                            <button class="btn-compartir" id="btnCompartir">
                                 <i class='bx bx-share-alt'></i> Compartir
                             </button>
                             <p class="producto-nota">Pedidos con anticipación · Entrega en Bogotá y área metropolitana.</p>
