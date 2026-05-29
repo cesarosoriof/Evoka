@@ -556,7 +556,7 @@
             div.innerHTML =
                 '<a href="producto.html?slug=' + p.slug + '" style="display:block;text-decoration:none;color:inherit;">' +
                     '<div class="c-card-img-wrap">' +
-                        '<img src="' + escHtml(p.imagen) + '" alt="' + escHtml(p.nombre) + '" loading="lazy" onerror="this.src='https://placehold.co/240x220?text=Imagen'">' +
+                        '<img src="' + escHtml(p.imagen) + '" alt="' + escHtml(p.nombre) + '" loading="lazy" onerror="this.src="https://placehold.co/240x220?text=Imagen">' +
                         (p.destacado ? '<span class="c-badge">Destacado</span>' : '') +
                     '</div>' +
                 '</a>' +
