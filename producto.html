@@ -1,13 +1,17 @@
 <!doctype html>
 <html lang="es">
+
 <head>
     <title>Producto – German Parra</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header class="header" id="mainHeader">
         <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
@@ -47,23 +51,27 @@
             <div class="footer-social">
                 <h4>Síguenos</h4>
                 <div class="social-links">
-                    <a href="https://www.instagram.com/germancho_00/" target="_blank"><i class='bx bxl-instagram'></i></a>
+                    <a href="https://www.instagram.com/germancho_00/" target="_blank"><i
+                            class='bx bxl-instagram'></i></a>
                     <a href="https://www.facebook.com" target="_blank"><i class='bx bxl-facebook'></i></a>
                     <a href="https://wa.me/573146377283" target="_blank"><i class='bx bxl-whatsapp'></i></a>
                 </div>
             </div>
         </div>
-        <div class="footer-bottom"><p>&copy; 2026 German Parra. Todos los derechos reservados.</p></div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 German Parra. Todos los derechos reservados.</p>
+        </div>
     </footer>
 
-    <a href="https://wa.me/573146377283?text=Hola%2C%20quiero%20más%20información" class="wa-float" target="_blank"><i class='bx bxl-whatsapp'></i></a>
+    <a href="https://wa.me/573146377283?text=Hola%2C%20quiero%20más%20información" class="wa-float" target="_blank"><i
+            class='bx bxl-whatsapp'></i></a>
 
     <script type="module">
         import { obtenerProductoPorSlug, obtenerConfig, formatearPrecio, aplicarSEO } from "./js/data.js";
 
         function escHtml(s) {
             if (!s) return '';
-            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         let WA = "573146377283";
@@ -75,14 +83,17 @@
         };
         window.comprarPorWhatsapp = (nombre) => {
             const msg = `Hola, estoy interesado en: *${nombre}*\n${location.href}`;
-            window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank');
+
+            const url = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+
+            window.location.href = url;
         };
         window.compartirProducto = (nombre) => {
             if (navigator.share) {
                 navigator.share({ title: nombre, url: location.href });
             } else {
                 navigator.clipboard.writeText(location.href)
-                    .then(() => { const t = document.getElementById('shareToast'); t.style.opacity='1'; setTimeout(()=>t.style.opacity='0', 2000); });
+                    .then(() => { const t = document.getElementById('shareToast'); t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2000); });
             }
         };
 
@@ -93,8 +104,8 @@
                 lb.id = 'lightbox'; lb.className = 'lightbox';
                 lb.innerHTML = '<span class="close">&times;</span><img src="" alt="Vista ampliada">';
                 document.body.appendChild(lb);
-                lb.querySelector('.close').addEventListener('click', () => { lb.classList.remove('active'); document.body.style.overflow=''; });
-                lb.addEventListener('click', e => { if(e.target===lb){ lb.classList.remove('active'); document.body.style.overflow=''; } });
+                lb.querySelector('.close').addEventListener('click', () => { lb.classList.remove('active'); document.body.style.overflow = ''; });
+                lb.addEventListener('click', e => { if (e.target === lb) { lb.classList.remove('active'); document.body.style.overflow = ''; } });
             }
             lb.querySelector('img').src = src;
             lb.classList.add('active');
@@ -102,9 +113,9 @@
         }
 
         const catMap = {
-            'detalles-sorpresa':    { label:'Detalles Sorpresa',    url:'detallessorpresa.html' },
-            'arreglos-florales':    { label:'Arreglos Florales',    url:'arreglosflorales.html' },
-            'fresas-con-chocolate': { label:'Fresas Con Chocolate', url:'fresas-con-chocolate.html' }
+            'detalles-sorpresa': { label: 'Detalles Sorpresa', url: 'detallessorpresa.html' },
+            'arreglos-florales': { label: 'Arreglos Florales', url: 'arreglosflorales.html' },
+            'fresas-con-chocolate': { label: 'Fresas Con Chocolate', url: 'fresas-con-chocolate.html' }
         };
 
         async function cargarProducto() {
@@ -130,19 +141,19 @@
 
                 // SEO dinámico
                 aplicarSEO({
-                    titulo:      `${producto.nombre} – German Parra`,
+                    titulo: `${producto.nombre} – German Parra`,
                     descripcion: producto.descripcion || `${producto.nombre} disponible en German Parra Detalles.`,
-                    imagen:      producto.imagen,
-                    url:         location.href,
+                    imagen: producto.imagen,
+                    url: location.href,
                 });
 
                 const cat = catMap[producto.categoria] || { label: producto.categoria, url: 'index.html' };
 
-                const galeriaHTML = (producto.galeria||[]).map((img,i) =>
-                    '<img src="' + img + '" alt="' + escHtml(producto.nombre) + ' ' + (i+1) + '" class="thumb ' + (i===0?'active':'') + '" onerror="this.style.display='none'">'
+                const galeriaHTML = (producto.galeria || []).map((img, i) =>
+                    '<img src="' + img + '" alt="' + escHtml(producto.nombre) + ' ' + (i + 1) + '" class="thumb ' + (i === 0 ? 'active' : '') + '" onerror="this.style.display='none'">'
                 ).join('');
 
-                const contenidoHTML = (producto.contenido||[]).map(item =>
+                const contenidoHTML = (producto.contenido || []).map(item =>
                     `<li><i class='bx bx-check'></i> ${escHtml(item)}</li>`
                 ).join('');
 
@@ -192,10 +203,10 @@
                 // Lightbox
                 setTimeout(() => {
                     const img = document.getElementById('imagenPrincipal');
-                    if (img) { img.style.cursor='zoom-in'; img.addEventListener('click', ()=>abrirLightbox(img.src)); }
+                    if (img) { img.style.cursor = 'zoom-in'; img.addEventListener('click', () => abrirLightbox(img.src)); }
                 }, 100);
 
-            } catch(err) {
+            } catch (err) {
                 contenedor.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:4rem 0;">Error al cargar el producto.</p>';
                 console.error(err);
             }
@@ -208,7 +219,7 @@
 
         // Menú
         const toggle = document.getElementById('menuToggle');
-        const nav    = document.getElementById('mainNav');
+        const nav = document.getElementById('mainNav');
         toggle.addEventListener('click', () => {
             const open = nav.classList.toggle('open');
             toggle.classList.toggle('open', open);
