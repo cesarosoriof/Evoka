@@ -497,3 +497,28 @@ body.login-body {
     .toast { right: 0.75rem; bottom: 0.75rem; }
     .toast-msg { max-width: calc(100vw - 1.5rem); }
 }
+
+/* ── TOGGLE SWITCH ──────────────────────────── */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px; height: 28px;
+    flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+    position: absolute; inset: 0;
+    background: #ccc; border-radius: 28px;
+    cursor: pointer;
+    transition: background 0.25s;
+}
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    left: 4px; bottom: 4px;
+    background: #fff; border-radius: 50%;
+    transition: transform 0.25s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--success); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(24px); }

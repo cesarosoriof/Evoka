@@ -1026,3 +1026,44 @@ button { cursor: pointer; font-family: var(--fuente-cuerpo); }
     .producto-card-body { padding: 0.8rem 0.9rem 1rem; }
     .hero-title { font-size: 2.4rem; }
 }
+
+/* ── BOTÓN COMPARTIR ──────────────────────────── */
+.btn-compartir {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    background: transparent;
+    color: var(--gris-texto);
+    border: 1px solid var(--gris-borde);
+    padding: 0.8rem;
+    border-radius: var(--radio);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 0.85rem;
+    transition: border-color var(--transicion), color var(--transicion), background var(--transicion);
+}
+.btn-compartir:hover {
+    border-color: var(--oro);
+    color: var(--oro-oscuro);
+    background: rgba(201,168,76,0.05);
+}
+.btn-compartir i { font-size: 1rem; }
+
+/* ── ENTREGA BADGE ────────────────────────────── */
+.entrega-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.25);
+    color: var(--oro-oscuro);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.4rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 1.25rem;
+}
+.entrega-badge i { font-size: 0.9rem; }

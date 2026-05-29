@@ -78,6 +78,8 @@
             <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
             <li><a href="#" data-section="productos">Productos</a></li>
             <li><a href="#" data-section="nuevo-producto">➕ Nuevo Producto</a></li>
+            <li><a href="#" data-section="configuracion">⚙️ Configuración</a></li>
+            <li><a href="#" data-section="resenas">⭐ Reseñas</a></li>
             <li><a href="#" data-section="seguridad">🔒 Seguridad</a></li>
             <li><a href="#" id="logoutBtn">Cerrar Sesión</a></li>
         </ul>
@@ -202,8 +204,94 @@
                     <input type="checkbox" id="destacado" style="width:auto;">
                     <label for="destacado" style="margin:0;">Producto Destacado</label>
                 </div>
+                <div class="form-group">
+                    <label>Orden en carrusel <small style="font-weight:400;text-transform:none;letter-spacing:0;">(1 = primero, número mayor = más al final)</small></label>
+                    <input type="number" id="ordenProducto" placeholder="1" min="1" max="999">
+                </div>
+                <div class="form-group">
+                    <label>Tiempo de entrega <small style="font-weight:400;text-transform:none;letter-spacing:0;">(ej: Entrega el mismo día)</small></label>
+                    <input type="text" id="entregaProducto" placeholder="Pedido con 1 día de anticipación">
+                </div>
                 <button type="submit" id="submitBtn">💾 Guardar Producto</button>
             </form>
+        </section>
+
+        <!-- CONFIGURACIÓN -->
+        <section id="configuracion" class="content-section">
+            <h1>⚙️ Configuración del Negocio</h1>
+            <form id="configForm" style="max-width:680px;">
+                <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:var(--shadow);margin-bottom:1.5rem;">
+                    <h3 style="font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">📱 WhatsApp & Contacto</h3>
+                    <div class="form-group">
+                        <label>Número de WhatsApp <small style="font-weight:400;text-transform:none;letter-spacing:0;">(solo números, ej: 573146377283)</small></label>
+                        <input type="text" id="cfgWhatsapp" placeholder="573146377283">
+                    </div>
+                    <div class="form-group">
+                        <label>Horario de atención</label>
+                        <input type="text" id="cfgHorario" placeholder="Lunes a Sábado · 7am – 6pm">
+                    </div>
+                </div>
+                <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:var(--shadow);margin-bottom:1.5rem;">
+                    <h3 style="font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">🟢 Estado del negocio</h3>
+                    <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="cfgAbierto" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span id="cfgAbiertoLabel" style="font-size:0.9rem;font-weight:600;">Negocio ABIERTO</span>
+                    </div>
+                    <div class="form-group" style="margin-top:1rem;">
+                        <label>Mensaje cuando está cerrado</label>
+                        <input type="text" id="cfgMensajeCerrado" placeholder="Hoy no estamos disponibles. Escríbenos pronto 🌸">
+                    </div>
+                </div>
+                <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:var(--shadow);margin-bottom:1.5rem;">
+                    <h3 style="font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">🏠 Texto del Hero (página de inicio)</h3>
+                    <div class="form-group">
+                        <label>Texto superior pequeño</label>
+                        <input type="text" id="cfgEyebrow" placeholder="Bogotá, Colombia">
+                    </div>
+                    <div class="form-group">
+                        <label>Título línea 1 (blanco)</label>
+                        <input type="text" id="cfgTitulo1" placeholder="Momentos">
+                    </div>
+                    <div class="form-group">
+                        <label>Título línea 2 (dorado itálico)</label>
+                        <input type="text" id="cfgTitulo2" placeholder="Inolvidables">
+                    </div>
+                    <div class="form-group">
+                        <label>Subtítulo</label>
+                        <textarea id="cfgSubtitulo" rows="2" placeholder="Desayunos sorpresa..."></textarea>
+                    </div>
+                </div>
+                <button type="submit">💾 Guardar Configuración</button>
+            </form>
+        </section>
+
+        <!-- RESEÑAS -->
+        <section id="resenas" class="content-section">
+            <h1>⭐ Reseñas de Clientes</h1>
+            <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;">
+                <button id="btnNuevaResena" style="background:var(--primary);color:var(--dark);border:none;padding:0.65rem 1.4rem;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;">➕ Agregar Reseña</button>
+            </div>
+            <!-- Formulario nueva reseña -->
+            <div id="resenaFormWrap" style="display:none;background:#fff;border-radius:10px;padding:1.5rem;box-shadow:var(--shadow);max-width:560px;margin-bottom:1.5rem;">
+                <h3 style="font-size:1rem;margin-bottom:1rem;" id="resenaFormTitle">Nueva Reseña</h3>
+                <input type="hidden" id="resenaId">
+                <div class="form-group"><label>Nombre del cliente</label><input type="text" id="rNombre" placeholder="María García" required></div>
+                <div class="form-group"><label>Texto de la reseña</label><textarea id="rTexto" rows="3" placeholder="Excelente servicio..." required></textarea></div>
+                <div class="form-group"><label>Estrellas (1-5)</label>
+                    <select id="rEstrellas"><option value="5">⭐⭐⭐⭐⭐ (5)</option><option value="4">⭐⭐⭐⭐ (4)</option><option value="3">⭐⭐⭐ (3)</option></select>
+                </div>
+                <div class="form-group"><label>Foto del cliente (URL)</label><input type="url" id="rFoto" placeholder="https://... (opcional)"></div>
+                <div class="form-group"><label>Fecha</label><input type="text" id="rFecha" placeholder="Mayo 2025"></div>
+                <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+                    <button id="btnGuardarResena" style="background:var(--primary);color:var(--dark);border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:700;cursor:pointer;">💾 Guardar</button>
+                    <button id="btnCancelarResena" type="button" style="background:#fff;border:1.5px solid var(--border);padding:0.7rem 1.5rem;border-radius:8px;cursor:pointer;">Cancelar</button>
+                </div>
+            </div>
+            <!-- Lista -->
+            <div id="resenasList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;max-width:900px;"></div>
         </section>
 
         <!-- SEGURIDAD -->
@@ -228,7 +316,9 @@
 <script type="module">
 import { inicializarDatos, obtenerProductos, obtenerProductosPorCategoria,
          crearProducto, actualizarProducto, eliminarProducto as borrarProducto,
-         subirImagen, formatearPrecio, exportarDatos, importarDatos }
+         subirImagen, formatearPrecio, exportarDatos, importarDatos,
+         obtenerConfig, guardarConfig, actualizarOrden,
+         obtenerResenas, crearResena, actualizarResena, eliminarResena }
   from "../js/data.js";
 import { verificarSesion, guardarPasswordHash } from "../js/admin-auth.js";
 

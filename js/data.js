@@ -567,3 +567,100 @@ export async function importarDatos(jsonString) {
     return false;
   }
 }
+
+// ─────────────────────────────────────────────
+// CONFIGURACIÓN DEL NEGOCIO
+// (número WA, estado abierto/cerrado, hero, etc.)
+// ─────────────────────────────────────────────
+const COL_CONFIG = "config";
+
+const CONFIG_DEFAULTS = {
+  whatsapp:       "573146377283",
+  negocioAbierto: true,
+  mensajeCerrado: "Hoy no estamos disponibles. Escríbenos y te atendemos pronto 🌸",
+  horario:        "Lunes a Sábado · 7am – 6pm",
+  heroTitulo1:    "Momentos",
+  heroTitulo2:    "Inolvidables",
+  heroSubtitulo:  "Desayunos sorpresa, arreglos florales y detalles únicos entregados con amor a quien más quieres.",
+  heroEyebrow:    "Bogotá, Colombia",
+};
+
+export async function obtenerConfig() {
+  try {
+    const snap = await getDocs(collection(db, COL_CONFIG));
+    if (snap.empty) {
+      await setDoc(doc(db, COL_CONFIG, "general"), CONFIG_DEFAULTS);
+      return { ...CONFIG_DEFAULTS };
+    }
+    const data = {};
+    snap.docs.forEach(d => Object.assign(data, d.data()));
+    return { ...CONFIG_DEFAULTS, ...data };
+  } catch(e) {
+    console.warn("Config fallback:", e.message);
+    return { ...CONFIG_DEFAULTS };
+  }
+}
+
+export async function guardarConfig(datos) {
+  await setDoc(doc(db, COL_CONFIG, "general"), datos, { merge: true });
+}
+
+// ─────────────────────────────────────────────
+// RESEÑAS DE CLIENTES
+// ─────────────────────────────────────────────
+const COL_RESENAS = "resenas";
+
+export async function obtenerResenas() {
+  const snap = await getDocs(collection(db, COL_RESENAS));
+  return snap.docs.map(d => ({ ...d.data(), id: d.id }))
+    .sort((a, b) => (b.orden || 0) - (a.orden || 0));
+}
+
+export async function crearResena(resena) {
+  const r = await addDoc(collection(db, COL_RESENAS), {
+    ...resena,
+    fecha: new Date().toISOString().split("T")[0]
+  });
+  return r.id;
+}
+
+export async function actualizarResena(id, datos) {
+  await updateDoc(doc(db, COL_RESENAS, id), datos);
+}
+
+export async function eliminarResena(id) {
+  await deleteDoc(doc(db, COL_RESENAS, id));
+}
+
+// ─────────────────────────────────────────────
+// ORDEN DE PRODUCTOS EN CARRUSEL
+// ─────────────────────────────────────────────
+export async function actualizarOrden(id, orden) {
+  await updateDoc(doc(db, COLECCION, id), { orden: Number(orden) });
+}
+
+// Obtener productos por categoría ORDENADOS
+export async function obtenerProductosPorCategoriaOrdenados(categoria) {
+  const q = query(collection(db, COLECCION), where("categoria", "==", categoria));
+  const snap = await getDocs(q);
+  return snap.docs
+    .map(d => ({ ...d.data(), id: d.id }))
+    .sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999));
+}
+
+// ─────────────────────────────────────────────
+// SEO DINÁMICO POR PRODUCTO
+// ─────────────────────────────────────────────
+export function aplicarSEO({ titulo, descripcion, imagen, url }) {
+  document.title = titulo;
+  const setMeta = (sel, val) => {
+    let el = document.querySelector(sel);
+    if (!el) { el = document.createElement('meta'); document.head.appendChild(el); }
+    el.setAttribute('content', val);
+  };
+  setMeta('meta[name="description"]', descripcion);
+  setMeta('meta[property="og:title"]', titulo);
+  setMeta('meta[property="og:description"]', descripcion);
+  if (imagen) setMeta('meta[property="og:image"]', imagen);
+  if (url)    setMeta('meta[property="og:url"]', url);
+}

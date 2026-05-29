@@ -73,7 +73,7 @@
     <a href="https://wa.me/573146377283?text=Hola%2C%20quiero%20más%20información" class="wa-float" target="_blank"><i class='bx bxl-whatsapp'></i></a>
 
     <script type="module">
-        import { obtenerProductosPorCategoria, formatearPrecio } from "./js/data.js";
+        import { obtenerProductosPorCategoriaOrdenados, obtenerConfig, formatearPrecio } from "./js/data.js";
 
         const CATEGORIA = 'arreglos-florales';
         let todosLosProductos = [];
@@ -115,10 +115,25 @@
             `).join('');
         }
 
+        let WA = "573146377283";
+
+        async function aplicarConfigWA() {
+            try {
+                const cfg = await obtenerConfig();
+                WA = cfg.whatsapp || WA;
+                const waUrl = `https://wa.me/${WA}?text=${encodeURIComponent('Hola, quiero más información')}`;
+                document.querySelectorAll('.wa-float').forEach(el => el.href = waUrl);
+            } catch(e) { console.warn('Config WA:', e.message); }
+        }
+
+        window.comprarPorWhatsapp = (nombre) => {
+            window.open(`https://wa.me/${WA}?text=${encodeURIComponent('Hola, quiero pedir: *' + nombre + '*')}`, '_blank');
+        };
+
         async function cargarCatalogo() {
             const grid = document.getElementById('productosGrid');
             try {
-                todosLosProductos = await obtenerProductosPorCategoria(CATEGORIA);
+                todosLosProductos = await obtenerProductosPorCategoriaOrdenados(CATEGORIA);
                 renderGrid();
             } catch(err) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#e74c3c;">Error al cargar productos.</p>';
