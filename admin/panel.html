@@ -230,6 +230,14 @@
                         <label>Horario de atención</label>
                         <input type="text" id="cfgHorario" placeholder="Lunes a Sábado · 7am – 6pm">
                     </div>
+                    <div class="form-group">
+                        <label>Ubicación / zona de entrega <small style="font-weight:400;text-transform:none;letter-spacing:0;">(se muestra en el mensaje de WhatsApp)</small></label>
+                        <input type="text" id="cfgUbicacion" placeholder="Bogotá y área metropolitana">
+                    </div>
+                    <div class="form-group">
+                        <label>Tiempo de entrega <small style="font-weight:400;text-transform:none;letter-spacing:0;">(se muestra en el mensaje de WhatsApp)</small></label>
+                        <input type="text" id="cfgTiempoEntrega" placeholder="Pedido con 1 día de anticipación">
+                    </div>
                 </div>
                 <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:var(--shadow);margin-bottom:1.5rem;">
                     <h3 style="font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:1.2rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">🟢 Estado del negocio</h3>
@@ -344,6 +352,7 @@ sidebarLinks.forEach(link => {
         document.getElementById(id).classList.add("active");
         if (id === "productos") await cargarTablaProductos();
         if (id === "dashboard") await cargarDashboard();
+        if (id === "configuracion") await cargarConfigForm();
     });
 });
 
@@ -380,6 +389,7 @@ async function cargarDashboard() {
     container.innerHTML = html;
 }
 await cargarDashboard();
+await cargarConfigForm();
 
 // ── Tabla de productos ────────────────────────
 let todosLosProductos = [];
@@ -654,6 +664,59 @@ document.getElementById("importFile").addEventListener("change", async function 
         }
     };
     reader.readAsText(file);
+});
+
+// ── Configuración ─────────────────────────────
+async function cargarConfigForm() {
+    const cfg = await obtenerConfig();
+    document.getElementById("cfgWhatsapp").value      = cfg.whatsapp || "";
+    document.getElementById("cfgHorario").value       = cfg.horario || "";
+    document.getElementById("cfgUbicacion").value       = cfg.ubicacion || "";
+    document.getElementById("cfgTiempoEntrega").value  = cfg.tiempoEntrega || "";
+    document.getElementById("cfgAbierto").checked     = cfg.negocioAbierto !== false;
+    document.getElementById("cfgMensajeCerrado").value = cfg.mensajeCerrado || "";
+    document.getElementById("cfgEyebrow").value       = cfg.heroEyebrow || "";
+    document.getElementById("cfgTitulo1").value       = cfg.heroTitulo1 || "";
+    document.getElementById("cfgTitulo2").value       = cfg.heroTitulo2 || "";
+    document.getElementById("cfgSubtitulo").value     = cfg.heroSubtitulo || "";
+    actualizarLabelAbierto();
+}
+
+function actualizarLabelAbierto() {
+    const chk = document.getElementById("cfgAbierto");
+    document.getElementById("cfgAbiertoLabel").textContent = chk.checked ? "Negocio ABIERTO" : "Negocio CERRADO";
+}
+
+document.getElementById("cfgAbierto").addEventListener("change", actualizarLabelAbierto);
+
+document.getElementById("configForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const btn = this.querySelector("button[type='submit']");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Guardando...`;
+
+    const datos = {
+        whatsapp:       document.getElementById("cfgWhatsapp").value,
+        horario:        document.getElementById("cfgHorario").value,
+        ubicacion:      document.getElementById("cfgUbicacion").value,
+        tiempoEntrega:  document.getElementById("cfgTiempoEntrega").value,
+        negocioAbierto: document.getElementById("cfgAbierto").checked,
+        mensajeCerrado: document.getElementById("cfgMensajeCerrado").value,
+        heroEyebrow:    document.getElementById("cfgEyebrow").value,
+        heroTitulo1:    document.getElementById("cfgTitulo1").value,
+        heroTitulo2:    document.getElementById("cfgTitulo2").value,
+        heroSubtitulo:  document.getElementById("cfgSubtitulo").value,
+    };
+
+    try {
+        await guardarConfig(datos);
+        mostrarToast("Configuración guardada ✅", "success");
+    } catch (err) {
+        mostrarToast("Error: " + err.message, "error");
+        console.error(err);
+    }
+    btn.disabled = false;
+    btn.innerHTML = "💾 Guardar Configuración";
 });
 
 // ── Contraseña ────────────────────────────────

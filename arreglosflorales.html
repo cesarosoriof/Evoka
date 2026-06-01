@@ -125,7 +125,7 @@
                 card.innerHTML =
                     '<a href="producto.html?slug=' + p.slug + '" class="producto-card-link">' +
                         '<div class="producto-card-img-wrap">' +
-                            '<img src="' + escHtml(p.imagen) + '" alt="' + escHtml(p.nombre) + '" class="producto-card-img" onerror="this.src='https://placehold.co/400x300?text=Imagen'" loading="lazy">' +
+                            '<img src="' + escHtml(p.imagen) + '" alt="' + escHtml(p.nombre) + '" class="producto-card-img" onerror="this.src=\'https://placehold.co/400x300?text=Imagen\'" loading="lazy">' +
                             (p.destacado ? '<span class="badge-dest">Destacado</span>' : '') +
                         '</div>' +
                     '</a>' +

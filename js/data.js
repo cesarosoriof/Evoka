@@ -353,6 +353,93 @@ const PRODUCTOS_INICIALES = [
     fecha: "2025-05-01"
   },
 
+  // ── ARREGLOS FLORALES ────────────────────
+  {
+    id: "af-01",
+    nombre: "Ramo Clásico de Rosas",
+    slug: "ramo-clasico-de-rosas",
+    categoria: "arreglos-florales",
+    precio: 85000,
+    descripcion: "Hermoso ramo de rosas rojas envueltas a mano. Ideal para aniversarios y fechas especiales.",
+    contenido: [
+      "12 rosas rojas premium",
+      "Envuelto en papel craft",
+      "Lazo decorativo",
+      "Tarjeta personalizada"
+    ],
+    imagen: "https://placehold.co/400x300?text=Rosas+Clásicas&color=e8c97a",
+    galeria: [
+      "https://placehold.co/400x300?text=Ramo+Rosas+1&color=e8c97a",
+      "https://placehold.co/400x300?text=Ramo+Rosas+2&color=e8c97a"
+    ],
+    destacado: true,
+    fecha: "2025-01-15"
+  },
+  {
+    id: "af-02",
+    nombre: "Arreglo Primavera",
+    slug: "arreglo-primavera",
+    categoria: "arreglos-florales",
+    precio: 95000,
+    descripcion: "Combinación de flores de temporada en tonos pastel. Perfecto para cumpleaños.",
+    contenido: [
+      "Flores variadas de temporada",
+      "Jarrón decorativo incluido",
+      "Precioso moño de raso",
+      "Tarjeta de felicitación"
+    ],
+    imagen: "https://placehold.co/400x300?text=Arreglo+Primavera&color=c9a84c",
+    galeria: [
+      "https://placehold.co/400x300?text=Primavera+1&color=c9a84c",
+      "https://placehold.co/400x300?text=Primavera+2&color=c9a84c"
+    ],
+    destacado: false,
+    fecha: "2025-02-01"
+  },
+  {
+    id: "af-03",
+    nombre: "Girasoles Del Campo",
+    slug: "girasoles-del-campo",
+    categoria: "arreglos-florales",
+    precio: 78000,
+    descripcion: "Alegres girasoles naturales que iluminan cualquier espacio. Envío en Bogotá.",
+    contenido: [
+      "6 girasoles grandes",
+      "Follaje decorativo",
+      "Envuelto en papel kraft",
+      "Tarjeta con mensaje"
+    ],
+    imagen: "https://placehold.co/400x300?text=Girasoles&color=f0d060",
+    galeria: [
+      "https://placehold.co/400x300?text=Girasoles+1&color=f0d060",
+      "https://placehold.co/400x300?text=Girasoles+2&color=f0d060"
+    ],
+    destacado: true,
+    fecha: "2025-03-01"
+  },
+  {
+    id: "af-04",
+    nombre: "Ramo Eterno Premium",
+    slug: "ramo-eterno-premium",
+    categoria: "arreglos-florales",
+    precio: 135000,
+    descripcion: "Elegante ramo de flores preservadas que duran meses. Presentación de lujo.",
+    contenido: [
+      "Rosas preservadas (5 unidades)",
+      "Flores secas decorativas",
+      "Caja de regalo con tapa cristal",
+      "Mensaje personalizado grabado"
+    ],
+    imagen: "https://placehold.co/400x300?text=Ramo+Eterno&color=d4a857",
+    galeria: [
+      "https://placehold.co/400x300?text=Eterno+1&color=d4a857",
+      "https://placehold.co/400x300?text=Eterno+2&color=d4a857",
+      "https://placehold.co/400x300?text=Eterno+3&color=d4a857"
+    ],
+    destacado: true,
+    fecha: "2025-04-01"
+  },
+
   // ── FRESAS CON CHOCOLATE ───────────────────
   {
     id: "fc-01",
@@ -479,6 +566,13 @@ export async function inicializarDatos() {
     console.log(`${PRODUCTOS_INICIALES.length} productos cargados.`);
   }
 }
+export async function forzarCargaProductos() {
+  for (const p of PRODUCTOS_INICIALES) {
+    await setDoc(doc(db, COLECCION, p.id), p);
+  }
+
+  console.log("Productos cargados correctamente");
+}
 
 // ─────────────────────────────────────────────
 // CRUD
@@ -579,6 +673,8 @@ const CONFIG_DEFAULTS = {
   negocioAbierto: true,
   mensajeCerrado: "Hoy no estamos disponibles. Escríbenos y te atendemos pronto 🌸",
   horario:        "Lunes a Sábado · 7am – 6pm",
+  ubicacion:      "Bogotá y área metropolitana",
+  tiempoEntrega:  "Pedido con 1 día de anticipación",
   heroTitulo1:    "Momentos",
   heroTitulo2:    "Inolvidables",
   heroSubtitulo:  "Desayunos sorpresa, arreglos florales y detalles únicos entregados con amor a quien más quieres.",

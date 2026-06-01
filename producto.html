@@ -81,11 +81,17 @@
             document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
         };
-        window.comprarPorWhatsapp = (nombre) => {
-            const msg = `Hola, estoy interesado en: *${nombre}*\n${location.href}`;
+        window.comprarPorWhatsapp = (nombre, precio, categoria, ubicacion, tiempoEntrega) => {
+            const msg = `Hola, me gustaría hacer un pedido:
 
+🛍️ *Producto:* ${nombre}
+📂 *Categoría:* ${categoria}
+💰 *Precio:* COP ${precio}
+⏱️ *Tiempo de entrega:* ${tiempoEntrega}
+📍 *Zona de entrega:* ${ubicacion}
+
+Quedo atento a su respuesta. ¡Gracias!`;
             const url = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
-
             window.location.href = url;
         };
         window.compartirProducto = (nombre) => {
@@ -204,7 +210,23 @@
                             <div id="shareToast" style="text-align:center;font-size:0.8rem;color:var(--oro);margin-top:0.5rem;opacity:0;transition:opacity 0.4s;">Link copiado ✓</div>
                         </div>
                     </div>`;
+// BOTÓN WHATSAPP
+const btnComprar = document.getElementById('btnComprar');
 
+if (btnComprar) {
+    btnComprar.addEventListener('click', () => {
+        comprarPorWhatsapp(producto.nombre, formatearPrecio(producto.precio), cat.label, cfg.ubicacion || 'Bogotá y área metropolitana', cfg.tiempoEntrega || 'Pedido con 1 día de anticipación');
+    });
+}
+
+// BOTÓN COMPARTIR
+const btnCompartir = document.getElementById('btnCompartir');
+
+if (btnCompartir) {
+    btnCompartir.addEventListener('click', () => {
+        compartirProducto(producto.nombre);
+    });
+}
                 // Lightbox
                 setTimeout(() => {
                     const img = document.getElementById('imagenPrincipal');
